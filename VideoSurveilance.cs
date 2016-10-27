@@ -43,7 +43,6 @@ namespace VideoSurveilance
     {
         try
         {
-                //this is a change
 
             _cameraCapture = new Capture();
         }
