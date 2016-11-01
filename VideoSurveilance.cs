@@ -19,6 +19,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.VideoSurveillance;
 using System.Diagnostics;
 using Emgu.CV.Util;
+using static Emgu.CV.FileNode;
 #if !(__IOS__ || NETFX_CORE)
 using Emgu.CV.Cuda;
 #endif
@@ -43,9 +44,12 @@ namespace VideoSurveilance
     {
         try
         {
-            _cameraCapture = new Capture();
-        }
-        catch (Exception e)
+                // test for test
+            _cameraCapture = new Capture(2);
+                _cameraCapture.FlipHorizontal = !_cameraCapture.FlipHorizontal;
+
+            }
+            catch (Exception e)
         {
             MessageBox.Show(e.Message);
             return;
@@ -62,12 +66,24 @@ namespace VideoSurveilance
     void ProcessFrame(object sender, EventArgs e)
     {
         Mat frame = _cameraCapture.QueryFrame();
-        Image<Bgr, Byte> ImageFrame = frame.ToImage<Bgr, Byte>();
 
 
-        if (ImageFrame != null)   // confirm that image is valid
+            Image<Bgr, Byte> ImageFrame = frame.ToImage<Bgr, Byte>();
+
+            //ImageFrame.ROI = Rectangle.Empty;
+            Rectangle roi = new Rectangle(213, 0, 213, 480); // set the roi image.ROI = new Rectangle(x, Y, Width, Height);
+            ImageFrame.ROI = roi;
+            
+            ImageFrame.Draw(roi, new Bgr(Color.Green), 5);
+
+
+
+
+
+            if (ImageFrame != null)   // confirm that image is valid
         {
             Image<Gray, byte> grayframe = ImageFrame.Convert<Gray, byte>();
+
 
             long processingTime;
             Rectangle[] results = FindPedestrian.Find(frame, true, out processingTime);
@@ -95,7 +111,7 @@ namespace VideoSurveilance
         #endregion
         CvBlobs blobs = new CvBlobs();
         _blobDetector.Detect(forgroundMask.ToImage<Gray, byte>(), blobs);
-        blobs.FilterByArea(3000, int.MaxValue);
+        blobs.FilterByArea(1000, int.MaxValue);
         //_tracker.Process(smoothedFrame, forgroundMask);
 
         foreach (var pair in blobs)
@@ -108,8 +124,10 @@ namespace VideoSurveilance
          }
 
         imageBox1.Image = ImageFrame;
-        imageBox2.Image = forgroundMask;
-    }
+            //   Console.WriteLine(ImageFrame.Size);
+        imageBox2.Image = frame;
+            //imageBox2.Image = forgroundMask;
+        }
     }
     
     
